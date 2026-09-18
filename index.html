@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Registro Comercial · Equipe Françueldo Garcia Marques</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --base:#030603; --panel:#070C08; --panel-2:#0B130D;
+  --line:rgba(96,255,150,.14); --line-soft:rgba(255,255,255,.06);
+  --neon:#35F07A; --neon-dim:#1E8F4B; --neon-wash:rgba(53,240,122,.08);
+  --text:#E9F3EB; --muted:#7C9585; --warn:#FFC24B; --bad:#FF7E7E;
+  --radius:14px; --display:"Sora",system-ui,sans-serif; --ui:"Inter",system-ui,-apple-system,sans-serif;
+}
+:root:not([data-theme="light"]){color-scheme:dark}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1100px 520px at 12% -8%, rgba(53,240,122,.10), transparent 62%),
+    radial-gradient(800px 420px at 92% 0%, rgba(53,240,122,.05), transparent 60%),
+    var(--base);
+  color:var(--text);font-family:var(--ui);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.wrap{max-width:1360px;margin:0 auto;padding:28px 20px 72px}
+.hidden{display:none !important}
+
+/* gate */
+.gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(760px 420px at 50% 20%, rgba(53,240,122,.10), transparent 62%), var(--base)}
+.gatebox{width:100%;max-width:410px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px 26px}
+.gatebox svg{width:46px;height:46px;display:block;margin-bottom:18px}
+.gatebox h2{font-family:var(--display);font-size:22px;font-weight:700;margin:0 0 4px;letter-spacing:-.02em}
+.gatebox h2 em{font-style:italic;font-weight:300;color:var(--neon)}
+.gatebox p.lead{margin:0 0 20px;color:var(--muted);font-size:13px}
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:11px 13px;font:inherit}
+.field input:focus{outline:2px solid var(--neon);outline-offset:-1px}
+.gate .msg{font-size:12.5px;min-height:18px;margin:2px 0 10px}
+.gate .msg.err{color:var(--bad)}
+.gate .msg.ok{color:var(--neon)}
+.gate .btn{width:100%;margin-bottom:9px}
+.gaterow{display:flex;gap:8px}
+.gaterow .btn{flex:1}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0}
+.linkbtn:hover{color:var(--neon)}
+.gatefoot{margin-top:14px;text-align:center}
+.unauth{max-width:420px;text-align:center;color:var(--muted);font-size:13.5px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px}
+.mark{width:42px;height:42px;flex:none}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,32px);line-height:1.08;margin:0;letter-spacing:-.02em}
+h1 em{font-style:italic;font-weight:300;color:var(--neon)}
+.sub{margin:6px 0 0;color:var(--muted);font-size:13.5px}
+.headright{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.who-badge{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.tag{border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:11.5px;color:var(--neon);background:var(--neon-wash)}
+.tag.lic{color:#BFD3C5;background:rgba(255,255,255,.04);border-color:var(--line-soft)}
+
+.weeknav{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:6px 8px}
+.weeknav button{background:none;border:0;color:var(--muted);font:inherit;font-size:18px;line-height:1;width:34px;height:34px;border-radius:999px;cursor:pointer}
+.weeknav button:hover{background:var(--neon-wash);color:var(--neon)}
+.weeknav .wk{min-width:172px;text-align:center}
+.weeknav .wk strong{display:block;font-family:var(--display);font-size:15px;letter-spacing:-.01em}
+.weeknav .wk span{display:block;font-size:11.5px;color:var(--muted)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin:22px 0}
+.kpi{background:linear-gradient(160deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:var(--radius);padding:16px 18px}
+.kpi .n{font-family:var(--display);font-size:32px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.kpi .l{color:var(--muted);font-size:12.5px;margin-top:2px}
+.kpi.hi{border-color:rgba(53,240,122,.3);background:linear-gradient(160deg,rgba(53,240,122,.12),var(--panel))}
+.kpi.hi .n{color:var(--neon)}
+
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);padding:14px 18px;margin-bottom:22px}
+.meta label{font-size:13px;color:var(--muted)}
+.meta input{width:74px;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 8px;font:inherit;font-variant-numeric:tabular-nums;text-align:center}
+.meta input:disabled{opacity:.55;cursor:not-allowed}
+.bar{flex:1 1 220px;height:8px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;min-width:160px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--neon-dim),var(--neon));border-radius:99px;transition:width .35s ease}
+.meta .pct{font-family:var(--display);font-size:14px;font-variant-numeric:tabular-nums}
+
+.shead{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;margin:30px 0 12px}
+.shead h2{font-family:var(--display);font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
+.shead p{margin:0;color:var(--muted);font-size:12.5px}
+
+.scroller{overflow-x:auto;border:1px solid var(--line-soft);border-radius:var(--radius);background:var(--panel)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1180px;font-variant-numeric:tabular-nums}
+th,td{padding:0;text-align:center}
+thead th{position:sticky;top:0;z-index:3;background:var(--panel-2);font-weight:500;font-size:11.5px;color:var(--muted);padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:bottom}
+thead tr.group th{font-family:var(--display);font-size:11px;letter-spacing:.14em;color:var(--neon);padding:9px 6px 5px;border-bottom:0;background:var(--panel-2)}
+thead tr.group th.g2{color:#9fd8b4}
+th.name,td.name{position:sticky;left:0;z-index:4;text-align:left;padding-left:16px;background:var(--panel-2);min-width:220px;border-right:1px solid var(--line)}
+tbody td.name{background:var(--panel);font-weight:500}
+tbody tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+tbody tr:nth-child(even) td.name{background:#090F0A}
+tbody td{border-bottom:1px solid var(--line-soft)}
+tbody tr:hover td{background:rgba(53,240,122,.045)}
+tbody tr:hover td.name{background:#0B140D}
+tbody tr.mine td{background:rgba(53,240,122,.07)}
+tbody tr.mine td.name{background:#0C1A11;box-shadow:inset 3px 0 0 var(--neon)}
+td.sep,th.sep{border-left:1px solid var(--line)}
+input.cell{width:100%;min-width:52px;background:transparent;border:0;color:var(--text);font:inherit;font-size:14px;font-variant-numeric:tabular-nums;text-align:center;padding:11px 2px;-moz-appearance:textfield}
+input.cell::-webkit-outer-spin-button,input.cell::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input.cell:focus{outline:2px solid var(--neon);outline-offset:-2px;background:var(--neon-wash);border-radius:6px}
+input.cell.zero{color:#3E5246}
+input.cell.sale:not(.zero){color:var(--neon);font-weight:600}
+input.cell:disabled{color:#5E7566;cursor:default}
+input.cell.sale:disabled:not(.zero){color:#2E9A5B}
+.namefield{display:flex;align-items:center;gap:8px;padding:8px 0}
+.namewrap{flex:1;min-width:0}
+.namefield input.nomein{width:100%;background:transparent;border:0;color:inherit;font:inherit;font-weight:500;padding:4px 0}
+.namefield input.nomein:focus{outline:0;border-bottom:1px solid var(--neon)}
+.namefield input.nomein:disabled{color:inherit;opacity:1}
+.email-line{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.email-line .st{flex:none;width:6px;height:6px;border-radius:99px;background:#3E5246}
+.email-line .st.on{background:var(--neon)}
+.email-line button{background:none;border:0;color:var(--muted);font:inherit;font-size:10.5px;cursor:pointer;padding:0;text-decoration:underline;flex:none}
+.email-line button:hover{color:var(--neon)}
+.youtag{font-size:10.5px;color:var(--neon);border:1px solid rgba(53,240,122,.35);border-radius:99px;padding:1px 7px;flex:none}
+.rm{background:none;border:0;color:#43584A;cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;border-radius:6px;flex:none}
+.rm:hover{color:var(--bad);background:rgba(255,126,126,.1)}
+tfoot td{padding:12px 6px;font-family:var(--display);font-weight:600;font-size:14px;border-top:1px solid var(--line);background:var(--panel-2)}
+tfoot td.name{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin-top:16px}
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);padding:18px}
+.card h3{font-family:var(--display);font-size:14px;font-weight:600;margin:0 0 14px}
+.rank{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.rank:last-child{border-bottom:0}
+.rank .pos{font-family:var(--display);font-size:12px;color:var(--muted);width:20px;flex:none}
+.rank .who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .track{flex:1.2;height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;min-width:50px}
+.rank .track i{display:block;height:100%;background:var(--neon);border-radius:99px}
+.rank .v{font-family:var(--display);font-size:14px;font-variant-numeric:tabular-nums;width:30px;text-align:right;flex:none}
+.rank.lead .who{color:var(--neon)}
+.funnel{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;align-items:center;gap:12px;font-size:13px}
+.step .lbl{width:120px;flex:none;color:var(--muted);font-size:12.5px}
+.step .track{flex:1;height:22px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.step .track i{display:block;height:100%;background:linear-gradient(90deg,rgba(53,240,122,.55),rgba(53,240,122,.2));border-radius:6px}
+.step .v{width:44px;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--display);font-size:13px}
+.mix{display:flex;flex-direction:column;gap:7px}
+.mixrow{display:flex;align-items:center;gap:10px;font-size:13px}
+.mixrow .lbl{flex:1;color:#BFD3C5}
+.mixrow .track{width:100px;height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;flex:none}
+.mixrow .track i{display:block;height:100%;background:var(--neon);border-radius:99px}
+.mixrow .v{width:26px;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--display)}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center}
+.btn{font:inherit;font-size:13.5px;padding:9px 16px;border-radius:999px;cursor:pointer;border:1px solid var(--line);background:var(--panel-2);color:var(--text)}
+.btn:hover{border-color:var(--neon);color:var(--neon)}
+.btn.primary{background:var(--neon);color:#052610;border-color:var(--neon);font-weight:600}
+.btn.primary:hover{background:#5CFF95;color:#052610}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default;pointer-events:none}
+.status{font-size:12.5px;color:var(--muted);margin-left:auto}
+.dot{display:inline-block;width:7px;height:7px;border-radius:99px;background:var(--neon);margin-right:6px;vertical-align:middle}
+.dot.local{background:var(--warn)}
+.notice{margin-top:14px;border:1px solid var(--line-soft);border-left:2px solid var(--neon);border-radius:10px;padding:12px 16px;color:var(--muted);font-size:12.5px;background:var(--panel)}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line-soft);color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+:focus-visible{outline:2px solid var(--neon);outline-offset:2px}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,3,.72);backdrop-filter:blur(2px)}
+.modalbox{width:100%;max-width:560px;max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 22px 18px}
+.modalhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.modalhead h3{font-family:var(--display);font-size:16px;margin:0;letter-spacing:-.01em}
+.modalsub{color:var(--muted);font-size:12px;margin:0 0 14px}
+.logwrap{display:flex;flex-direction:column;gap:2px}
+.logrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+.logrow:last-child{border-bottom:0}
+.logrow .who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logrow .when{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;font-size:12px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){
+  .wrap{padding:20px 12px 60px}
+  .kpi .n{font-size:26px}
+  .step .lbl{width:88px}
+  .headright{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== gate ===== -->
+<div class="gate" id="gate">
+  <div class="gatebox" id="gatebox">
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M24 3.5 41.5 13v22L24 44.5 6.5 35V13z" fill="none" stroke="#35F07A" stroke-width="1.6" opacity=".45"/>
+      <path d="M31 17.5c-2.1-1.8-5-2.6-8-1.9-4.6 1-7.6 5.1-7.4 9.6.2 4.6 3.9 8.3 8.7 8.4 4.6.1 8.4-3.2 8.7-7.6h-8.2" fill="none" stroke="#35F07A" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+    <h2>Registro <em>Comercial</em></h2>
+    <p class="lead" id="gateLead">Equipe Françueldo Garcia Marques · acesso individual.</p>
+
+    <div id="formLogin">
+      <label class="field"><span>E-mail cadastrado pelo administrador</span>
+        <input type="email" id="loginEmail" autocomplete="username"></label>
+      <label class="field"><span>Senha</span>
+        <input type="password" id="loginPwd" autocomplete="current-password"></label>
+      <div class="msg" id="loginMsg"></div>
+      <button class="btn primary" id="loginBtn">Entrar</button>
+      <div class="gatefoot">
+        <button class="linkbtn" id="toSignup">Primeiro acesso — criar minha senha</button>
+      </div>
+      <div class="gatefoot">
+        <button class="linkbtn" id="toForgot">Esqueci minha senha</button>
+      </div>
+    </div>
+
+    <div id="formSignup" class="hidden">
+      <label class="field"><span>E-mail cadastrado pelo administrador</span>
+        <input type="email" id="suEmail" autocomplete="username"></label>
+      <label class="field"><span>Crie uma senha (mínimo 6 caracteres)</span>
+        <input type="password" id="suPwd" autocomplete="new-password"></label>
+      <label class="field"><span>Confirme a senha</span>
+        <input type="password" id="suPwd2" autocomplete="new-password"></label>
+      <div class="msg" id="suMsg"></div>
+      <button class="btn primary" id="suBtn">Criar minha senha</button>
+      <div class="gatefoot"><button class="linkbtn" id="toLogin1">Já tenho senha — entrar</button></div>
+    </div>
+
+    <div id="formForgot" class="hidden">
+      <label class="field"><span>Seu e-mail</span>
+        <input type="email" id="fgEmail" autocomplete="username"></label>
+      <div class="msg" id="fgMsg"></div>
+      <button class="btn primary" id="fgBtn">Enviar link de redefinição</button>
+      <div class="gatefoot"><button class="linkbtn" id="toLogin2">Voltar para entrar</button></div>
+    </div>
+
+    <div id="formRecovery" class="hidden">
+      <p class="lead">Defina sua nova senha.</p>
+      <label class="field"><span>Nova senha (mínimo 6 caracteres)</span>
+        <input type="password" id="rcPwd" autocomplete="new-password"></label>
+      <label class="field"><span>Confirme a nova senha</span>
+        <input type="password" id="rcPwd2" autocomplete="new-password"></label>
+      <div class="msg" id="rcMsg"></div>
+      <button class="btn primary" id="rcBtn">Salvar nova senha</button>
+    </div>
+  </div>
+
+  <div class="unauth hidden" id="unauthBox">
+    <p>Sua conta (<span id="unauthEmail"></span>) entrou com sucesso, mas não está cadastrada na equipe.</p>
+    <p>Peça para o administrador te adicionar com este mesmo e-mail e tente de novo.</p>
+    <button class="btn" id="unauthOut">Sair</button>
+  </div>
+</div>
+
+<!-- ===== app ===== -->
+<div class="wrap hidden" id="app">
+
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 3.5 41.5 13v22L24 44.5 6.5 35V13z" fill="none" stroke="#35F07A" stroke-width="1.6" opacity=".45"/>
+        <path d="M31 17.5c-2.1-1.8-5-2.6-8-1.9-4.6 1-7.6 5.1-7.4 9.6.2 4.6 3.9 8.3 8.7 8.4 4.6.1 8.4-3.2 8.7-7.6h-8.2" fill="none" stroke="#35F07A" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>Registro <em>Comercial</em></h1>
+        <p class="sub">Equipe Françueldo Garcia Marques · iGreen Energy</p>
+      </div>
+    </div>
+    <div class="headright">
+      <div class="who-badge">
+        <span class="tag" id="roleTag">—</span>
+        <span id="whoName"></span>
+        <button class="linkbtn" id="exitBtn">Sair</button>
+      </div>
+      <div class="weeknav">
+        <button id="prev" title="Semana anterior" aria-label="Semana anterior">&lsaquo;</button>
+        <div class="wk"><strong id="wkLabel">—</strong><span id="wkRange">—</span></div>
+        <button id="next" title="Próxima semana" aria-label="Próxima semana">&rsaquo;</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="meta">
+    <label for="metaInput">Meta de conexões da equipe na semana</label>
+    <input id="metaInput" type="number" min="0" step="1" value="20">
+    <div class="bar"><i id="metaBar" style="width:0%"></i></div>
+    <span class="pct" id="metaPct">0%</span>
+  </div>
+
+  <div class="shead">
+    <div>
+      <h2>Atividade e conexões da semana</h2>
+      <p id="sheadHint">Digite os números de cada licenciado. Tudo salva sozinho.</p>
+    </div>
+  </div>
+
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr class="group" id="groupRow"></tr>
+        <tr id="headRow"></tr>
+      </thead>
+      <tbody id="body"></tbody>
+      <tfoot><tr id="footRow"></tr></tfoot>
+    </table>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary admin-only" id="addBtn">Adicionar licenciado</button>
+    <button class="btn" id="csvBtn">Exportar CSV da semana</button>
+    <button class="btn danger admin-only" id="clearBtn">Zerar a semana</button>
+    <button class="btn admin-only" id="logBtn">Histórico de acesso</button>
+    <span class="status" id="status"><span class="dot"></span>Conectando…</span>
+  </div>
+
+  <div class="notice" id="licNotice">Você edita apenas a sua própria linha. As linhas dos demais licenciados ficam visíveis, mas bloqueadas — só o administrador altera a equipe, a meta e os dados dos outros.</div>
+
+  <div class="cols">
+    <div class="card">
+      <h3>Ranking da semana</h3>
+      <div id="rank"></div>
+    </div>
+    <div class="card">
+      <h3>Funil da equipe</h3>
+      <div class="funnel" id="funnel"></div>
+    </div>
+    <div class="card">
+      <h3>Conexões por solução</h3>
+      <div class="mix" id="mix"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Conexão Green · Livre · Placas · Solar · Telecom · Seguros · Expansão · iGreen Club</span>
+    <span id="foot"></span>
+  </footer>
+</div>
+
+<div class="modal hidden" id="logModal">
+  <div class="modalbox">
+    <div class="modalhead">
+      <h3>Histórico de acesso</h3>
+      <button class="linkbtn" id="logCloseBtn">Fechar</button>
+    </div>
+    <p class="modalsub">Quem entrou na ferramenta e quando, mais recente primeiro.</p>
+    <div class="logwrap" id="logList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SUPABASE_URL="https://eqreyxzsfdnusbbonlcg.supabase.co";
+  var SUPABASE_KEY="sb_publishable_NWhR3OFH2XcjrXo0BrbbeA_jA7DAzpb";
+  var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+  var ATIV = [
+    {k:"contatos",   col:"contatos",   h:"Novos<br>contatos"},
+    {k:"mensagens",  col:"mensagens",  h:"Mensagens<br>enviadas"},
+    {k:"convites",   col:"convites",   h:"Convites p/<br>apresentação"},
+    {k:"folLeads",   col:"fol_leads",  h:"Follow-up<br>contatos"},
+    {k:"prospects",  col:"prospects",  h:"Novos<br>prospects"},
+    {k:"folProsp",   col:"fol_prosp",  h:"Follow-up<br>prospects"},
+    {k:"agendadas",  col:"agendadas",  h:"Reuniões<br>agendadas"},
+    {k:"realizadas", col:"realizadas", h:"Reuniões<br>realizadas"}
+  ];
+  var CONEX = [
+    {k:"green",    col:"green",    h:"Green",    n:"Conexão Green"},
+    {k:"livre",    col:"livre",    h:"Livre",    n:"Conexão Livre"},
+    {k:"placas",   col:"placas",   h:"Placas",   n:"Conexão Placas"},
+    {k:"solar",    col:"solar",    h:"Solar",    n:"Conexão Solar"},
+    {k:"telecom",  col:"telecom",  h:"Telecom",  n:"Conexão Telecom"},
+    {k:"seguros",  col:"seguros",  h:"Seguros",  n:"Conexão Seguros"},
+    {k:"expansao", col:"expansao", h:"Expansão", n:"Conexão Expansão"},
+    {k:"club",     col:"club",     h:"Club",     n:"iGreen Club"}
+  ];
+  var ALL=ATIV.concat(CONEX);
+
+  var team=[];          // [{id,nome,email,is_admin,user_id}]
+  var weekData={};       // membro_id -> {contatos:..,...}
+  var goal=20;
+  var monday=mondayOf(new Date()), wkey=weekKey(monday);
+  var role=null, meId=null, myEmail=null;
+  var ready=false;
+  var realtimeCh=null, logUnsub=null;
+
+  /* ---------- week helpers ---------- */
+  function mondayOf(d){ var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+  function isoParts(mon){ var t=new Date(mon.getTime()); t.setDate(t.getDate()+3); var y=t.getFullYear(), firstMon=mondayOf(new Date(y,0,4)); return {y:y,w:Math.round((t-firstMon)/604800000)+1}; }
+  function weekKey(mon){ var p=isoParts(mon); return p.y+"-S"+(p.w<10?"0":"")+p.w; }
+  function fmtRange(mon){
+    var end=new Date(mon.getTime()); end.setDate(end.getDate()+6);
+    var M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+    var f=function(d){ return ("0"+d.getDate()).slice(-2)+" "+M[d.getMonth()]; };
+    return f(mon)+" – "+f(end)+" · "+end.getFullYear();
+  }
+  function fmtDT(ts){
+    var d=new Date(ts);
+    var dd=("0"+d.getDate()).slice(-2), mm=("0"+(d.getMonth()+1)).slice(-2), yy=d.getFullYear();
+    var hh=("0"+d.getHours()).slice(-2), mi=("0"+d.getMinutes()).slice(-2);
+    return dd+"/"+mm+"/"+yy+" "+hh+":"+mi;
+  }
+
+  function num(v){ v=parseInt(v,10); return isFinite(v)&&v>0?v:0; }
+  function row(id){ return weekData[id]||(weekData[id]={}); }
+  function val(id,k){ var r=weekData[id]; return r?num(r[k]):0; }
+  function sumCol(k){ var s=0; for(var i=0;i<team.length;i++) s+=val(team[i].id,k); return s; }
+  function conexOf(id){ var s=0; for(var i=0;i<CONEX.length;i++) s+=val(id,CONEX[i].k); return s; }
+  function totalConex(){ var s=0; for(var i=0;i<team.length;i++) s+=conexOf(team[i].id); return s; }
+  function isAdmin(){ return role==="adm"; }
+  function canEditRow(id){ return isAdmin()||(meId&&id===meId); }
+  function byId(id){ for(var i=0;i<team.length;i++) if(team[i].id===id) return team[i]; return null; }
+  function setStatus(txt,local){ document.getElementById("status").innerHTML='<span class="dot'+(local?" local":"")+'"></span>'+txt; }
+
+  function dbRowToLocal(r){
+    var o={};
+    ALL.forEach(function(c){ o[c.k]=num(r[c.col]); });
+    return o;
+  }
+  function localToDbRow(membroId,semana,r){
+    var o={membro_id:membroId,semana:semana,updated_at:new Date().toISOString()};
+    ALL.forEach(function(c){ o[c.col]=num(r[c.k]); });
+    return o;
+  }
+
+  /* ================= AUTH ================= */
+  function showForm(which){
+    ["formLogin","formSignup","formForgot","formRecovery"].forEach(function(id){
+      document.getElementById(id).classList.toggle("hidden", id!==which);
+    });
+    document.getElementById("gatebox").classList.remove("hidden");
+    document.getElementById("unauthBox").classList.add("hidden");
+  }
+  document.getElementById("toSignup").addEventListener("click",function(){ showForm("formSignup"); });
+  document.getElementById("toLogin1").addEventListener("click",function(){ showForm("formLogin"); });
+  document.getElementById("toLogin2").addEventListener("click",function(){ showForm("formLogin"); });
+  document.getElementById("toForgot").addEventListener("click",function(){ showForm("formForgot"); });
+
+  document.getElementById("loginBtn").addEventListener("click",function(){
+    var email=document.getElementById("loginEmail").value.trim();
+    var pwd=document.getElementById("loginPwd").value;
+    var msg=document.getElementById("loginMsg"); msg.className="msg"; msg.textContent="";
+    if(!email||!pwd){ msg.className="msg err"; msg.textContent="Preencha e-mail e senha."; return; }
+    sb.auth.signInWithPassword({email:email,password:pwd}).then(function(res){
+      if(res.error){ msg.className="msg err"; msg.textContent="E-mail ou senha incorretos."; return; }
+      // onAuthStateChange cuida do resto
+    });
+  });
+
+  document.getElementById("suBtn").addEventListener("click",function(){
+    var email=document.getElementById("suEmail").value.trim();
+    var p1=document.getElementById("suPwd").value, p2=document.getElementById("suPwd2").value;
+    var msg=document.getElementById("suMsg"); msg.className="msg"; msg.textContent="";
+    if(!email){ msg.className="msg err"; msg.textContent="Informe o e-mail cadastrado pelo administrador."; return; }
+    if(p1.length<6){ msg.className="msg err"; msg.textContent="A senha precisa ter ao menos 6 caracteres."; return; }
+    if(p1!==p2){ msg.className="msg err"; msg.textContent="As senhas não coincidem."; return; }
+    sb.auth.signUp({email:email,password:p1}).then(function(res){
+      if(res.error){
+        msg.className="msg err";
+        msg.textContent=/registered/i.test(res.error.message)?"Este e-mail já tem senha — use 'Entrar'.":res.error.message;
+        return;
+      }
+      if(res.data && res.data.session){ return; } // onAuthStateChange assume
+      msg.className="msg ok";
+      msg.textContent="Conta criada. Se pedirmos confirmação por e-mail, abra o link recebido e depois entre normalmente.";
+    });
+  });
+
+  document.getElementById("fgBtn").addEventListener("click",function(){
+    var email=document.getElementById("fgEmail").value.trim();
+    var msg=document.getElementById("fgMsg"); msg.className="msg"; msg.textContent="";
+    if(!email){ msg.className="msg err"; msg.textContent="Informe seu e-mail."; return; }
+    var redirect=window.location.origin+window.location.pathname;
+    sb.auth.resetPasswordForEmail(email,{redirectTo:redirect}).then(function(res){
+      if(res.error){ msg.className="msg err"; msg.textContent=res.error.message; return; }
+      msg.className="msg ok"; msg.textContent="Enviamos um link de redefinição para esse e-mail.";
+    });
+  });
+
+  document.getElementById("rcBtn").addEventListener("click",function(){
+    var p1=document.getElementById("rcPwd").value, p2=document.getElementById("rcPwd2").value;
+    var msg=document.getElementById("rcMsg"); msg.className="msg"; msg.textContent="";
+    if(p1.length<6){ msg.className="msg err"; msg.textContent="A senha precisa ter ao menos 6 caracteres."; return; }
+    if(p1!==p2){ msg.className="msg err"; msg.textContent="As senhas não coincidem."; return; }
+    sb.auth.updateUser({password:p1}).then(function(res){
+      if(res.error){ msg.className="msg err"; msg.textContent=res.error.message; return; }
+      msg.className="msg ok"; msg.textContent="Senha atualizada! Entrando…";
+    });
+  });
+
+  document.getElementById("unauthOut").addEventListener("click",function(){ sb.auth.signOut(); });
+  document.getElementById("exitBtn").addEventListener("click",function(){ closeLogModal(); sb.auth.signOut(); });
+
+  if(window.location.hash.indexOf("type=recovery")!==-1){ showForm("formRecovery"); }
+
+  sb.auth.onAuthStateChange(function(event,session){
+    if(event==="PASSWORD_RECOVERY"){ showForm("formRecovery"); return; }
+    if(session && session.user){ loadProfile(session.user); }
+    else{ teardown(); showForm("formLogin"); }
+  });
+
+  function teardown(){
+    ready=false; role=null; meId=null; myEmail=null;
+    if(realtimeCh){ sb.removeChannel(realtimeCh); realtimeCh=null; }
+    closeLogModal();
+    document.getElementById("app").classList.add("hidden");
+    document.getElementById("gate").classList.remove("hidden");
+  }
+
+  function loadProfile(user){
+    myEmail=user.email;
+    sb.from("regcom_equipe").select("*").eq("user_id",user.id).maybeSingle().then(function(res){
+      if(res.error||!res.data){
+        document.getElementById("gatebox").classList.add("hidden");
+        document.getElementById("unauthBox").classList.remove("hidden");
+        document.getElementById("unauthEmail").textContent=myEmail;
+        return;
+      }
+      var me=res.data;
+      role=me.is_admin?"adm":"lic";
+      meId=me.id;
+      logAccess();
+      openApp();
+    });
+  }
+
+  function logAccess(){
+    sb.from("regcom_acessos").insert({papel:"lic"}).then(function(){});
+  }
+
+  /* ================= DATA LOAD ================= */
+  function loadTeam(){
+    return sb.from("regcom_equipe").select("id,nome,email,is_admin,user_id").order("nome").then(function(res){
+      team=(res.data||[]);
+    });
+  }
+  function loadMeta(){
+    return sb.from("regcom_metas").select("meta").eq("semana",wkey).maybeSingle().then(function(res){
+      goal=(res.data&&res.data.meta!=null)?num(res.data.meta):20;
+    });
+  }
+  function loadWeek(){
+    return sb.from("regcom_semanas").select("*").eq("semana",wkey).then(function(res){
+      weekData={};
+      (res.data||[]).forEach(function(r){ weekData[r.membro_id]=dbRowToLocal(r); });
+    });
+  }
+  function loadAll(){
+    setStatus("Carregando…");
+    Promise.all([loadTeam(),loadMeta(),loadWeek()]).then(function(){
+      setStatus("Sincronizado com a equipe");
+      subscribeRealtime();
+      renderAll();
+    }).catch(function(){ setStatus("Sem conexão no momento",true); });
+  }
+
+  function subscribeRealtime(){
+    if(realtimeCh){ sb.removeChannel(realtimeCh); realtimeCh=null; }
+    realtimeCh=sb.channel("regcom-"+wkey)
+      .on("postgres_changes",{event:"*",schema:"public",table:"regcom_semanas",filter:"semana=eq."+wkey},function(payload){
+        var active=document.activeElement;
+        if(active&&active.classList&&active.classList.contains("cell")) return;
+        var r=payload.new&&payload.new.membro_id?payload.new:payload.old;
+        if(!r) return;
+        if(payload.eventType==="DELETE"){ delete weekData[r.membro_id]; }
+        else{ weekData[r.membro_id]=dbRowToLocal(payload.new); }
+        renderBody(); renderFoot(); renderPanels();
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"regcom_equipe"},function(){
+        loadTeam().then(function(){ renderAll(); });
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"regcom_metas",filter:"semana=eq."+wkey},function(payload){
+        if(payload.new&&payload.new.meta!=null){ goal=num(payload.new.meta); renderMeta(); }
+      })
+      .subscribe();
+  }
+
+  /* ================= APP ================= */
+  function openApp(){
+    ready=true;
+    document.getElementById("gate").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("roleTag").textContent=isAdmin()?"Administrador":"Licenciado";
+    document.getElementById("roleTag").className="tag"+(isAdmin()?"":" lic");
+    document.getElementById("whoName").textContent=myEmail||"";
+    var adminEls=document.querySelectorAll(".admin-only");
+    for(var i=0;i<adminEls.length;i++) adminEls[i].classList.toggle("hidden",!isAdmin());
+    document.getElementById("licNotice").classList.toggle("hidden",isAdmin());
+    document.getElementById("metaInput").disabled=!isAdmin();
+    document.getElementById("sheadHint").textContent=isAdmin()
+      ? "Você edita qualquer linha, a equipe e a meta. Tudo salva sozinho."
+      : "Preencha a sua linha, destacada em verde. Salva sozinho.";
+    loadAll();
+  }
+
+  function renderHead(){
+    document.getElementById("groupRow").innerHTML='<th class="name"></th>'
+      +'<th colspan="'+ATIV.length+'">PROSPECÇÃO</th>'
+      +'<th class="g2 sep" colspan="'+CONEX.length+'">CONEXÕES FECHADAS</th>'
+      +'<th class="sep">TOTAL</th>';
+    var h='<th class="name">Licenciado</th>';
+    ATIV.forEach(function(c){ h+='<th>'+c.h+'</th>'; });
+    CONEX.forEach(function(c,i){ h+='<th'+(i===0?' class="sep"':'')+' title="'+c.n+'">'+c.h+'</th>'; });
+    h+='<th class="sep">Conexões</th>';
+    document.getElementById("headRow").innerHTML=h;
+  }
+
+  function removeMember(m){
+    if(!isAdmin()) return;
+    var msg="Excluir "+m.nome+" da equipe?\n\nIsso apaga também TODO o histórico de semanas lançado por ele/ela (não só a semana atual). Não dá para desfazer.";
+    if(!confirm(msg)) return;
+    if(prompt('Para confirmar, digite EXCLUIR:')!=="EXCLUIR") return;
+    sb.from("regcom_equipe").delete().eq("id",m.id).then(function(res){
+      if(res.error){ alert("Não foi possível excluir: "+res.error.message); return; }
+      loadTeam().then(function(){ renderAll(); });
+    });
+  }
+
+  function promptEditEmail(m){
+    if(!isAdmin()) return;
+    if(m.user_id){ alert("Esse licenciado já criou a senha com este e-mail — para trocar, exclua e cadastre de novo."); return; }
+    var novo=prompt("Novo e-mail para "+m.nome+":", m.email);
+    if(novo===null) return;
+    novo=novo.trim();
+    if(!novo||novo.indexOf("@")===-1){ alert("E-mail inválido."); return; }
+    sb.from("regcom_equipe").update({email:novo}).eq("id",m.id).then(function(res){
+      if(res.error){ alert("Não foi possível salvar: "+res.error.message); return; }
+      loadTeam().then(function(){ renderAll(); });
+    });
+  }
+
+  function renderBody(){
+    var tb=document.getElementById("body");
+    tb.innerHTML="";
+    team.forEach(function(m){
+      var editable=canEditRow(m.id);
+      var tr=document.createElement("tr");
+      if(meId&&m.id===meId) tr.className="mine";
+
+      var td=document.createElement("td"); td.className="name";
+      var nf=document.createElement("div"); nf.className="namefield";
+      var nw=document.createElement("div"); nw.className="namewrap";
+      var ni=document.createElement("input");
+      ni.type="text"; ni.className="nomein"; ni.value=m.nome; ni.disabled=!isAdmin();
+      ni.setAttribute("aria-label","Nome do licenciado");
+      ni.addEventListener("change",function(){
+        var novo=ni.value.trim()||"Sem nome";
+        sb.from("regcom_equipe").update({nome:novo}).eq("id",m.id).then(function(res){
+          if(res.error){ alert("Não foi possível salvar: "+res.error.message); ni.value=m.nome; return; }
+          m.nome=novo; renderPanels();
+        });
+      });
+      nw.appendChild(ni);
+      if(isAdmin()){
+        var el=document.createElement("div"); el.className="email-line";
+        var st=document.createElement("span"); st.className="st"+(m.user_id?" on":"");
+        var em=document.createElement("span"); em.textContent=m.email; em.style.overflow="hidden"; em.style.textOverflow="ellipsis";
+        var ed=document.createElement("button"); ed.textContent="editar"; ed.title="Editar e-mail";
+        ed.addEventListener("click",function(){ promptEditEmail(m); });
+        el.appendChild(st); el.appendChild(em); el.appendChild(ed);
+        nw.appendChild(el);
+      }
+      nf.appendChild(nw);
+      if(meId&&m.id===meId){ var yt=document.createElement("span"); yt.className="youtag"; yt.textContent="você"; nf.appendChild(yt); }
+      if(isAdmin()){
+        var rm=document.createElement("button");
+        rm.className="rm"; rm.innerHTML="&times;"; rm.title="Excluir "+m.nome;
+        rm.addEventListener("click",function(){ removeMember(m); });
+        nf.appendChild(rm);
+      }
+      td.appendChild(nf); tr.appendChild(td);
+
+      ALL.forEach(function(c,idx){
+        var cell=document.createElement("td");
+        if(idx===ATIV.length) cell.className="sep";
+        var inp=document.createElement("input");
+        inp.type="number"; inp.min="0"; inp.step="1"; inp.className="cell";
+        if(idx>=ATIV.length) inp.classList.add("sale");
+        var v=val(m.id,c.k);
+        inp.value=v?v:0;
+        if(!v) inp.classList.add("zero");
+        inp.disabled=!editable;
+        inp.setAttribute("aria-label",m.nome+" · "+c.k);
+        if(editable){
+          inp.addEventListener("focus",function(){ inp.select(); });
+          inp.addEventListener("input",function(){
+            var n=num(inp.value);
+            row(m.id)[c.k]=n;
+            inp.classList.toggle("zero",n===0);
+            saveWeekRow(m.id);
+            renderPanels(); renderFoot();
+          });
+          inp.addEventListener("blur",function(){ inp.value=num(inp.value); });
+        }
+        cell.appendChild(inp); tr.appendChild(cell);
+      });
+
+      var tot=document.createElement("td");
+      tot.className="sep"; tot.style.fontWeight="600"; tot.style.fontFamily="var(--display)";
+      tot.dataset.total=m.id; tot.textContent=conexOf(m.id);
+      tr.appendChild(tot);
+      tb.appendChild(tr);
+    });
+    if(!team.length){
+      tb.innerHTML='<tr><td class="name" colspan="'+(ALL.length+2)+'" style="padding:26px 16px;color:var(--muted)">Nenhum licenciado cadastrado.</td></tr>';
+    }
+  }
+
+  var saveTimers={};
+  function saveWeekRow(membroId){
+    clearTimeout(saveTimers[membroId]);
+    saveTimers[membroId]=setTimeout(function(){
+      var payload=localToDbRow(membroId,wkey,row(membroId));
+      sb.from("regcom_semanas").upsert(payload,{onConflict:"membro_id,semana"}).then(function(res){
+        if(res.error) setStatus("Não foi possível salvar agora",true);
+        else setStatus("Sincronizado com a equipe");
+      });
+    },450);
+  }
+
+  function renderFoot(){
+    var f='<td class="name">TOTAL DA EQUIPE</td>';
+    ALL.forEach(function(c,i){ f+='<td'+(i===ATIV.length?' class="sep"':'')+'>'+sumCol(c.k)+'</td>'; });
+    f+='<td class="sep" style="color:var(--neon)">'+totalConex()+'</td>';
+    document.getElementById("footRow").innerHTML=f;
+    team.forEach(function(m){
+      var el=document.querySelector('td[data-total="'+m.id+'"]');
+      if(el) el.textContent=conexOf(m.id);
+    });
+  }
+
+  function renderKpis(){
+    var contatos=sumCol("contatos"), agend=sumCol("agendadas"), real=sumCol("realizadas");
+    var cx=totalConex();
+    var conv=real?Math.round(cx/real*100):0;
+    var comp=agend?Math.round(real/agend*100):0;
+    var cards=[
+      {n:contatos,l:"Novos contatos abordados"},
+      {n:real+" / "+agend,l:"Reuniões realizadas / agendadas ("+comp+"%)"},
+      {n:cx,l:"Conexões fechadas",hi:true},
+      {n:conv+"%",l:"Fechamento por reunião realizada"}
+    ];
+    document.getElementById("kpis").innerHTML=cards.map(function(c){
+      return '<div class="kpi'+(c.hi?" hi":"")+'"><div class="n">'+c.n+'</div><div class="l">'+c.l+'</div></div>';
+    }).join("");
+  }
+
+  function renderMeta(){
+    var cx=totalConex();
+    var pct=goal>0?Math.min(100,Math.round(cx/goal*100)):0;
+    document.getElementById("metaBar").style.width=pct+"%";
+    document.getElementById("metaPct").textContent=pct+"% ("+cx+"/"+goal+")";
+    var mi=document.getElementById("metaInput");
+    if(document.activeElement!==mi) mi.value=goal;
+  }
+
+  function renderRank(){
+    var el=document.getElementById("rank");
+    var list=team.map(function(m){ return {nome:m.nome,cx:conexOf(m.id),re:val(m.id,"realizadas")}; })
+                 .sort(function(a,b){ return b.cx-a.cx||b.re-a.re; });
+    if(!list.length||list[0].cx===0){ el.innerHTML='<p class="empty">Assim que a primeira conexão for lançada, o ranking aparece aqui.</p>'; return; }
+    var max=list[0].cx||1;
+    el.innerHTML=list.map(function(m,i){
+      return '<div class="rank'+(i===0?" lead":"")+'"><span class="pos">'+(i+1)+'</span>'
+        +'<span class="who"></span><span class="track"><i style="width:'+Math.round(m.cx/max*100)+'%"></i></span>'
+        +'<span class="v">'+m.cx+'</span></div>';
+    }).join("");
+    var whos=el.querySelectorAll(".who");
+    list.forEach(function(m,i){ if(whos[i]) whos[i].textContent=m.nome; });
+  }
+
+  function renderFunnel(){
+    var steps=[
+      {l:"Novos contatos",v:sumCol("contatos")},
+      {l:"Prospects",v:sumCol("prospects")},
+      {l:"Agendadas",v:sumCol("agendadas")},
+      {l:"Realizadas",v:sumCol("realizadas")},
+      {l:"Conexões",v:totalConex()}
+    ];
+    var max=Math.max.apply(null,steps.map(function(s){ return s.v; }))||1;
+    document.getElementById("funnel").innerHTML=steps.map(function(s){
+      return '<div class="step"><span class="lbl">'+s.l+'</span>'
+        +'<span class="track"><i style="width:'+Math.round(s.v/max*100)+'%"></i></span>'
+        +'<span class="v">'+s.v+'</span></div>';
+    }).join("");
+  }
+
+  function renderMix(){
+    var rows=CONEX.map(function(c){ return {n:c.n,v:sumCol(c.k)}; });
+    var max=Math.max.apply(null,rows.map(function(r){ return r.v; }))||1;
+    document.getElementById("mix").innerHTML=rows.map(function(r){
+      return '<div class="mixrow"><span class="lbl">'+r.n+'</span>'
+        +'<span class="track"><i style="width:'+Math.round(r.v/max*100)+'%"></i></span>'
+        +'<span class="v">'+r.v+'</span></div>';
+    }).join("");
+  }
+
+  function renderPanels(){ renderKpis(); renderMeta(); renderRank(); renderFunnel(); renderMix(); }
+  function renderWeek(){
+    document.getElementById("wkLabel").textContent="Semana "+wkey.split("-S")[1]+" · "+wkey.split("-")[0];
+    document.getElementById("wkRange").textContent=fmtRange(monday);
+  }
+  function renderAll(){
+    if(!ready) return;
+    renderWeek(); renderHead(); renderBody(); renderFoot(); renderPanels();
+  }
+
+  /* ---------- histórico de acesso ---------- */
+  function renderLogRows(entries){
+    var el=document.getElementById("logList");
+    if(!entries.length){ el.innerHTML='<p class="empty">Ainda não há acessos registrados.</p>'; return; }
+    var list=entries.slice().sort(function(a,b){ return new Date(b.criado_em)-new Date(a.criado_em); });
+    el.innerHTML=list.map(function(e){
+      var isAdm=e.papel==="admin";
+      return '<div class="logrow"><span class="tag'+(isAdm?"":" lic")+'">'+(isAdm?"Admin":"Licenciado")+'</span>'
+        +'<span class="who"></span><span class="when">'+fmtDT(e.criado_em)+'</span></div>';
+    }).join("");
+    var whos=el.querySelectorAll(".who");
+    list.forEach(function(e,i){ if(whos[i]) whos[i].textContent=e.nome; });
+  }
+  function openLogModal(){
+    if(!isAdmin()) return;
+    document.getElementById("logModal").classList.remove("hidden");
+    document.getElementById("logList").innerHTML='<p class="empty">Carregando…</p>';
+    sb.from("regcom_acessos").select("nome,papel,criado_em").order("criado_em",{ascending:false}).limit(100).then(function(res){
+      if(res.error){ document.getElementById("logList").innerHTML='<p class="empty">Não foi possível carregar agora.</p>'; return; }
+      renderLogRows(res.data||[]);
+    });
+    if(logUnsub){ sb.removeChannel(logUnsub); logUnsub=null; }
+    logUnsub=sb.channel("regcom-log").on("postgres_changes",{event:"INSERT",schema:"public",table:"regcom_acessos"},function(){
+      sb.from("regcom_acessos").select("nome,papel,criado_em").order("criado_em",{ascending:false}).limit(100).then(function(res){
+        if(!res.error) renderLogRows(res.data||[]);
+      });
+    }).subscribe();
+  }
+  function closeLogModal(){
+    document.getElementById("logModal").classList.add("hidden");
+    if(logUnsub){ sb.removeChannel(logUnsub); logUnsub=null; }
+  }
+  document.getElementById("logBtn").addEventListener("click",openLogModal);
+  document.getElementById("logCloseBtn").addEventListener("click",closeLogModal);
+  document.getElementById("logModal").addEventListener("click",function(e){ if(e.target.id==="logModal") closeLogModal(); });
+
+  /* ---------- events ---------- */
+  function goWeek(d){
+    monday=new Date(monday.getTime()); monday.setDate(monday.getDate()+d*7);
+    wkey=weekKey(monday);
+    loadMeta();
+    loadWeek().then(function(){ subscribeRealtime(); renderAll(); });
+    renderWeek();
+  }
+  document.getElementById("prev").addEventListener("click",function(){ goWeek(-1); });
+  document.getElementById("next").addEventListener("click",function(){ goWeek(1); });
+
+  document.getElementById("metaInput").addEventListener("input",function(){ if(!isAdmin()) return; goal=num(this.value); renderMeta(); });
+  document.getElementById("metaInput").addEventListener("change",function(){
+    if(!isAdmin()) return;
+    sb.from("regcom_metas").upsert({semana:wkey,meta:goal},{onConflict:"semana"}).then(function(res){
+      if(res.error) alert("Não foi possível salvar a meta: "+res.error.message);
+    });
+  });
+
+  document.getElementById("addBtn").addEventListener("click",function(){
+    if(!isAdmin()) return;
+    var nome=prompt("Nome do licenciado:");
+    if(nome===null) return;
+    nome=nome.trim(); if(!nome) return;
+    var email=prompt("E-mail do licenciado (ele usará para criar a senha):");
+    if(email===null) return;
+    email=email.trim();
+    if(!email||email.indexOf("@")===-1){ alert("E-mail inválido."); return; }
+    sb.from("regcom_equipe").insert({nome:nome,email:email}).then(function(res){
+      if(res.error){
+        alert(/duplicate|unique/i.test(res.error.message)?"Já existe um licenciado com esse e-mail.":("Não foi possível adicionar: "+res.error.message));
+        return;
+      }
+      loadTeam().then(function(){ renderAll(); });
+    });
+  });
+
+  document.getElementById("clearBtn").addEventListener("click",function(){
+    if(!isAdmin()) return;
+    if(!confirm("Zerar todos os números desta semana?")) return;
+    sb.from("regcom_semanas").delete().eq("semana",wkey).then(function(res){
+      if(res.error){ alert("Não foi possível zerar: "+res.error.message); return; }
+      loadWeek().then(renderAll);
+    });
+  });
+
+  document.getElementById("csvBtn").addEventListener("click",function(){
+    var head=["Licenciado"].concat(ATIV.map(function(c){ return c.h.replace(/<br>/g," "); }))
+             .concat(CONEX.map(function(c){ return c.n; })).concat(["Total conexões"]);
+    var lines=[head.join(";")];
+    team.forEach(function(m){
+      var r=[m.nome];
+      ALL.forEach(function(c){ r.push(val(m.id,c.k)); });
+      r.push(conexOf(m.id));
+      lines.push(r.join(";"));
+    });
+    var tot=["TOTAL DA EQUIPE"];
+    ALL.forEach(function(c){ tot.push(sumCol(c.k)); });
+    tot.push(totalConex());
+    lines.push(tot.join(";"));
+    var csv="\ufeff"+lines.join("\r\n");
+    var name="registro-comercial-"+wkey+".csv";
+    try{
+      var a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+      a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    }catch(e){ alert("Não foi possível baixar o arquivo neste navegador."); }
+  });
+
+  document.getElementById("foot").textContent="Registro semanal · lançamentos salvos automaticamente";
+
+  sb.auth.getSession().then(function(res){
+    var session=res.data&&res.data.session;
+    if(session&&session.user) loadProfile(session.user);
+  });
+})();
+</script>
+</body>
+</html>
